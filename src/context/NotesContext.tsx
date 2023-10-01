@@ -9,6 +9,7 @@ interface NotesContextType {
   favorites: INote[]
   others: INote[]
   createNote: (Note: ICreateNote) => Promise<void>
+  updateNote: (note: INote) => Promise<void>
 }
 
 const NotesContext = createContext({} as NotesContextType)
@@ -18,6 +19,17 @@ export default function NotesProvider({ children }: { children: React.ReactNode 
   const [favorites, setFavorites] = useState([] as INote[])
   const [others, setOthers] = useState([] as INote[])
   const { userId } = Auth()
+
+  const getNotes = async () => {
+    try {
+      if (!userId) return
+      const { data } = await api.get(`/note/${userId}`)
+      setNotes(data)
+      filterNotes(data)
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   const filterNotes = (Notes: INote[]) => {
     const favorite = [] as INote[]
@@ -32,6 +44,7 @@ export default function NotesProvider({ children }: { children: React.ReactNode 
     setFavorites(favorite)
     setOthers(other)
   }
+
   const createNote = async (note: ICreateNote) => {
     try {
       const { data } = await api.post('/note/create', { ...note })
@@ -41,12 +54,12 @@ export default function NotesProvider({ children }: { children: React.ReactNode 
       console.log(error);
     }
   }
-  const getNotes = async () => {
+
+
+  const updateNote = async (note: INote) => {
     try {
-      if (!userId) return
-      const { data } = await api.get(`/note/${userId}`)
-      setNotes(data)
-      filterNotes(data)
+      await api.put(`/note/${note.id}`, { ...note })
+      getNotes()
     } catch (error) {
       console.log(error);
     }
@@ -56,7 +69,7 @@ export default function NotesProvider({ children }: { children: React.ReactNode 
     getNotes()
   }, [userId])
   return (
-    <NotesContext.Provider value={{ notes, favorites, others, createNote }}>
+    <NotesContext.Provider value={{ notes, favorites, others, createNote, updateNote }}>
       {children}
     </NotesContext.Provider>
   )

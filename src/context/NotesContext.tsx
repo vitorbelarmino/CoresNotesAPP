@@ -10,6 +10,7 @@ interface NotesContextType {
   others: INote[]
   createNote: (Note: ICreateNote) => Promise<void>
   updateNote: (note: INote) => Promise<void>
+  deleteNote: (note: INote) => Promise<void>
 }
 
 const NotesContext = createContext({} as NotesContextType)
@@ -65,11 +66,20 @@ export default function NotesProvider({ children }: { children: React.ReactNode 
     }
   }
 
+  const deleteNote = async (note: INote) => {
+    try {
+      await api.delete(`/note/${note.id}`)
+      getNotes()
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   useEffect(() => {
     getNotes()
   }, [userId])
   return (
-    <NotesContext.Provider value={{ notes, favorites, others, createNote, updateNote }}>
+    <NotesContext.Provider value={{ notes, favorites, others, createNote, updateNote, deleteNote }}>
       {children}
     </NotesContext.Provider>
   )

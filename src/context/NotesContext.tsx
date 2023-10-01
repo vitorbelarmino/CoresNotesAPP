@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { ICreateNote, INote } from "@/interface/INote";
 import { Auth } from "./authContext";
 import { api } from "@/api";
+import { formatString } from "@/utils/formatString";
 
 interface NotesContextType {
   notes: INote[]
@@ -11,6 +12,7 @@ interface NotesContextType {
   createNote: (Note: ICreateNote) => Promise<void>
   updateNote: (note: INote) => Promise<void>
   deleteNote: (note: INote) => Promise<void>
+  searchNotes: (text: string) => void
 }
 
 const NotesContext = createContext({} as NotesContextType)
@@ -75,11 +77,21 @@ export default function NotesProvider({ children }: { children: React.ReactNode 
     }
   }
 
+  const searchNotes = (text: string) => {
+    const formattedText = formatString(text)
+    const filteredNotes = notes.filter(note => {
+      const formattedTitle = formatString(note.title)
+      const formattedContent = formatString(note.content)
+      return formattedTitle.includes(formattedText) || formattedContent.includes(formattedText)
+    })
+    filterNotes(filteredNotes)
+  }
+
   useEffect(() => {
     getNotes()
   }, [userId])
   return (
-    <NotesContext.Provider value={{ notes, favorites, others, createNote, updateNote, deleteNote }}>
+    <NotesContext.Provider value={{ notes, favorites, others, createNote, updateNote, deleteNote, searchNotes }}>
       {children}
     </NotesContext.Provider>
   )

@@ -26,9 +26,9 @@ export default function NotesProvider({ children }: { children: React.ReactNode 
   const getNotes = async () => {
     try {
       if (!userId) return
-      const { data } = await api.get(`/note/${userId}`)
-      setNotes(data)
-      filterNotes(data)
+      const { data } = await api.get(`/user/${userId}/notes`)
+      setNotes(data.notes)
+      filterNotes(data.notes)
     } catch (error) {
       console.log(error);
     }
@@ -61,7 +61,12 @@ export default function NotesProvider({ children }: { children: React.ReactNode 
 
   const updateNote = async (note: INote) => {
     try {
-      await api.put(`/note/${note.id}`, { ...note })
+      await api.put(`/note/update/${note.id}`, {
+        title: note.title,
+        content: note.content,
+        favorite: note.favorite,
+        color: note.color
+      })
       getNotes()
     } catch (error) {
       console.log(error);
@@ -70,7 +75,7 @@ export default function NotesProvider({ children }: { children: React.ReactNode 
 
   const deleteNote = async (note: INote) => {
     try {
-      await api.delete(`/note/${note.id}`)
+      await api.delete(`/note/delete/${note.id}`)
       getNotes()
     } catch (error) {
       console.log(error);

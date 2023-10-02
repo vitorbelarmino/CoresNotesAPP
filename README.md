@@ -1,4 +1,4 @@
-# Newsletter
+# CoresNoteApp
 
 ## 💻 Projeto
  Um app de notas autoadesivas, onde o usuário pode criar, alterar, favoritar e deletar uma nota.

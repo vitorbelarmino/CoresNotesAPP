@@ -4,13 +4,15 @@ import { ICreateNote, INote } from "@/interface/INote";
 import { Auth } from "./authContext";
 import { api } from "@/api";
 import { formatString } from "@/utils/formatString";
+import { noteSchema } from "@/schemas/NoteSchemas";
+import { toast } from "react-toastify";
 
 interface NotesContextType {
   notes: INote[]
   favorites: INote[]
   others: INote[]
-  createNote: (Note: ICreateNote) => Promise<void>
-  updateNote: (note: INote) => Promise<void>
+  createNote: (Note: ICreateNote) => Promise<boolean | undefined>
+  updateNote: (note: INote) => Promise<boolean | undefined>
   deleteNote: (note: INote) => Promise<void>
   searchNotes: (text: string) => void
 }
@@ -27,6 +29,8 @@ export default function NotesProvider({ children }: { children: React.ReactNode 
     try {
       if (!userId) return
       const { data } = await api.get(`/user/${userId}/notes`)
+      console.log(data);
+
       setNotes(data.notes)
       filterNotes(data.notes)
     } catch (error) {
@@ -50,7 +54,14 @@ export default function NotesProvider({ children }: { children: React.ReactNode 
 
   const createNote = async (note: ICreateNote) => {
     try {
+      const { error } = noteSchema.validate({ title: note.title, content: note.content })
+      if (error) {
+        toast.error(error.message,)
+        return false
+      }
       const { data } = await api.post('/note/create', { ...note })
+      console.log(data);
+
       setNotes([...notes, data])
       filterNotes([...notes, data])
     } catch (error) {
@@ -59,8 +70,14 @@ export default function NotesProvider({ children }: { children: React.ReactNode 
   }
 
 
-  const updateNote = async (note: INote) => {
+  const updateNote = async (note: INote): Promise<boolean | undefined> => {
     try {
+      console.log(note, 'note');
+      const { error } = noteSchema.validate({ title: note.title, content: note.content })
+      if (error) {
+        toast.error(error.message,)
+        return false
+      }
       await api.put(`/note/update/${note.id}`, {
         title: note.title,
         content: note.content,
@@ -68,6 +85,9 @@ export default function NotesProvider({ children }: { children: React.ReactNode 
         color: note.color
       })
       getNotes()
+      console.log('passou aqui');
+
+      return true
     } catch (error) {
       console.log(error);
     }

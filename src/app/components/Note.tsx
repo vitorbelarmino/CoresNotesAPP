@@ -48,9 +48,12 @@ export default function Note({ note, }: NoteProps) {
     setData({ ...data, [name]: value })
   }
 
-  const handleSubmit = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleSubmit = async (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (e.code === 'Enter') {
-      updateNote({ ...data })
+      const valid = await updateNote({ ...data })
+      if (!valid) {
+        return
+      }
       setEdit(false)
     }
   }
